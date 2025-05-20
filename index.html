@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>YZ Electric Center</title>
   <style>
     body {
@@ -10,6 +10,8 @@
       margin: 0;
       display: flex;
       height: 100vh;
+      background: #f0f2f5;
+      color: #333;
     }
     .sidebar {
       width: 250px;
@@ -18,28 +20,43 @@
       padding-top: 20px;
       display: flex;
       flex-direction: column;
+      user-select: none;
     }
     .sidebar h2 {
       text-align: center;
       cursor: pointer;
       margin-bottom: 30px;
+      font-weight: 700;
+      letter-spacing: 2px;
     }
     .tab {
-      padding: 10px 20px;
+      padding: 12px 20px;
       cursor: pointer;
+      font-weight: 600;
+      transition: background-color 0.2s ease;
     }
     .tab:hover {
       background-color: #0056b3;
     }
+    .tab.active {
+      background-color: #004494;
+      cursor: default;
+    }
     .sub-tabs {
-      margin-left: 20px;
+      margin-left: 15px;
       display: none;
       flex-direction: column;
     }
+    .sub-tabs .tab {
+      font-weight: 400;
+      padding-left: 35px;
+    }
     .main {
       flex-grow: 1;
-      padding: 40px;
+      padding: 30px 40px;
       overflow-y: auto;
+      background: white;
+      box-shadow: inset 0 0 10px #ddd;
     }
     .welcome {
       color: #007BFF;
@@ -47,26 +64,69 @@
       font-style: italic;
       text-align: center;
       margin-top: 20vh;
+      user-select: none;
     }
     table, th, td {
-      border: 1px solid #000;
+      border: 1px solid #aaa;
       border-collapse: collapse;
-      padding: 8px;
+      padding: 8px 10px;
+      text-align: left;
+      font-size: 14px;
     }
     table {
       width: 100%;
       margin-top: 20px;
+      background: #fff;
+    }
+    th {
+      background-color: #007BFF;
+      color: white;
+      user-select: none;
+    }
+    button {
+      cursor: pointer;
+      background-color: #007BFF;
+      color: white;
+      border: none;
+      padding: 8px 15px;
+      border-radius: 3px;
+      font-weight: 600;
+      margin-right: 10px;
+      transition: background-color 0.2s ease;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+    button:disabled {
+      background-color: #cccccc;
+      cursor: not-allowed;
     }
     .form-group {
-      margin-bottom: 10px;
+      margin-bottom: 12px;
     }
-    .form-table {
+    input[type=text], input[type=number], select {
       width: 100%;
+      padding: 8px 10px;
+      font-size: 14px;
+      border: 1px solid #ccc;
+      border-radius: 3px;
+      box-sizing: border-box;
+      transition: border-color 0.2s ease;
     }
+    input[type=text]:focus, input[type=number]:focus, select:focus {
+      border-color: #007BFF;
+      outline: none;
+    }
+    label {
+      font-weight: 600;
+      display: block;
+      margin-bottom: 5px;
+    }
+    /* Voucher Modal */
     .voucher-view {
       display: none;
       border: 1px solid #000;
-      padding: 20px;
+      padding: 20px 25px;
       background: white;
       position: fixed;
       top: 10%;
@@ -75,54 +135,73 @@
       width: 80%;
       max-width: 700px;
       z-index: 100;
-      box-shadow: 0 0 10px rgba(0,0,0,0.5);
+      box-shadow: 0 0 15px rgba(0,0,0,0.6);
+      border-radius: 6px;
+      max-height: 80vh;
+      overflow-y: auto;
     }
     .voucher-header {
       text-align: center;
       font-weight: bold;
+      font-size: 24px;
+      color: #007BFF;
+      user-select: none;
     }
     .voucher-header small {
       display: block;
+      font-size: 13px;
+      margin-top: 5px;
+      color: #555;
     }
     .voucher-section {
       margin-top: 20px;
+      font-size: 16px;
+    }
+    .voucher-section strong {
+      font-weight: 600;
     }
     .voucher-signatures {
       display: flex;
       justify-content: space-between;
       margin-top: 40px;
+      font-weight: 600;
+      font-size: 14px;
+      user-select: none;
     }
     .voucher-buttons {
-      margin-top: 20px;
+      margin-top: 25px;
       text-align: center;
     }
-    .tab:has(span) {
-      cursor: default;
-      pointer-events: none;
-    }
-    /* Overlay for modal */
     #voucher-overlay {
       display: none;
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(0,0,0,0.3);
+      background: rgba(0,0,0,0.4);
       z-index: 99;
+    }
+    /* Disable pointer events on tabs with no click */
+    .tab.disabled {
+      pointer-events: none;
+      opacity: 0.6;
+      cursor: default;
     }
   </style>
 </head>
 <body>
   <div class="sidebar">
     <h2 onclick="showDefaultView()">YZ Electric</h2>
-    <div class="tab" onclick="toggleSubTabs('item')">ITEM</div>
+
+    <div class="tab" id="tab-item" onclick="toggleSubTabs('item')">ITEM</div>
     <div class="sub-tabs" id="item-sub">
-      <div class="tab" onclick="showView('add-item')">Add Item</div>
-      <div class="tab" onclick="showView('item-list')">Item List</div>
+      <div class="tab" id="tab-add-item" onclick="showView('add-item')">Add Item</div>
+      <div class="tab" id="tab-item-list" onclick="showView('item-list')">Item List</div>
     </div>
-    <div class="tab" onclick="toggleSubTabs('order')">ORDER</div>
+
+    <div class="tab" id="tab-order" onclick="toggleSubTabs('order')">ORDER</div>
     <div class="sub-tabs" id="order-sub">
-      <div class="tab" onclick="showView('invoice')">Invoice</div>
-      <div class="tab" onclick="showView('verify')">Verify</div>
-      <div class="tab" onclick="showView('confirmed')">Confirmed</div>
+      <div class="tab" id="tab-invoice" onclick="showView('invoice')">Invoice</div>
+      <div class="tab" id="tab-verify" onclick="showView('verify')">Verify</div>
+      <div class="tab" id="tab-confirmed" onclick="showView('confirmed')">Confirmed</div>
     </div>
   </div>
 
@@ -132,55 +211,76 @@
     <!-- Add Item -->
     <div id="add-item" style="display:none">
       <h3>Add Item</h3>
-      <div class="form-table">
-        <div class="form-group"><input type="text" id="itemCode" placeholder="Item Code" style="width:100%"></div>
-        <div class="form-group"><input type="text" id="itemName" placeholder="Item Name" style="width:100%"></div>
-        <div class="form-group"><input type="text" id="itemBrand" placeholder="Brand" style="width:100%"></div>
-        <div class="form-group"><input type="number" id="itemPrice" placeholder="Unit Price" style="width:100%"></div>
-        <div class="form-group"><input type="number" id="itemQty" placeholder="Quantity" style="width:100%"></div>
-        <div class="form-group">
-          <select id="itemMeasure" style="width:100%">
-            <option>Unit</option>
-            <option>Box</option>
-            <option>Piece</option>
-          </select>
-        </div>
-        <button onclick="addItem()">Add Item</button>
+      <div class="form-group"><input type="text" id="itemCode" placeholder="Item Code" autocomplete="off" /></div>
+      <div class="form-group"><input type="text" id="itemName" placeholder="Item Name" autocomplete="off" /></div>
+      <div class="form-group"><input type="text" id="itemBrand" placeholder="Brand" autocomplete="off" /></div>
+      <div class="form-group"><input type="number" id="itemPrice" placeholder="Unit Price" min="0" step="0.01" /></div>
+      <div class="form-group"><input type="number" id="itemQty" placeholder="Quantity" min="0" step="1" /></div>
+      <div class="form-group">
+        <select id="itemMeasure">
+          <option value="">-- Select Unit --</option>
+          <option>Unit</option>
+          <option>Box[bx]</option>
+          <option>Piece[pcs]</option>
+          <option>Meter[m]</option>
+          <option>Kilogram[kg]</option>
+          <option>Gram[g]</option>
+          <option>Dozen[dz]</option>
+        </select>
       </div>
+      <button onclick="addItem()">Add Item</button>
     </div>
 
     <!-- Item List -->
     <div id="item-list" style="display:none">
       <h3>Item List</h3>
-      <table id="itemTable">
-        <tr><th>No.</th><th>Item Code</th><th>Item Name</th><th>Brand</th><th>Unit Price</th><th>Quantity</th><th>Measure</th><th>Action</th></tr>
+      <table id="itemTable" aria-label="Item List">
+        <thead>
+          <tr><th>No.</th><th>Item Code</th><th>Item Name</th><th>Brand</th><th>Unit Price</th><th>Quantity</th><th>Measure</th><th>Action</th></tr>
+        </thead>
+        <tbody></tbody>
       </table>
     </div>
 
     <!-- Invoice -->
     <div id="invoice" style="display:none">
       <h3>Generate Invoice</h3>
-      <div class="form-group"><input type="text" id="customerName" placeholder="Customer Name" style="width:100%"></div>
-      <div class="form-group"><input type="text" id="customerPhone" placeholder="Phone No" style="width:100%"></div>
-      <div class="form-group"><input type="text" id="customerAddress" placeholder="Address" style="width:100%"></div>
-      <div class="form-group"><input type="text" id="voucherCode" placeholder="Voucher Code (e.g., YA-00000001)" style="width:100%"></div>
+      <div class="form-group"><input type="text" id="customerName" placeholder="Customer Name" autocomplete="off" /></div>
+      <div class="form-group"><input type="text" id="customerPhone" placeholder="Customer Phone" autocomplete="off" /></div>
+      <div class="form-group"><input type="text" id="customerAddress" placeholder="Customer Address" autocomplete="off" /></div>
+      <div class="form-group">
+        <input type="text" id="voucherCode" placeholder="Voucher Code" readonly />
+        <button onclick="generateVoucherCode()">Generate Code</button>
+      </div>
 
-      <div id="invoiceItems"></div>
+      <h4>Add Items to Invoice</h4>
       <div class="form-group">
-        <label>Select Item</label>
-        <select id="invoiceItemSelect" style="width:100%"></select>
+        <select id="selectItemCode" onchange="populateSelectedItem()">
+          <option value="">Select Item Code</option>
+        </select>
       </div>
-      <div class="form-group">
-        <label>Quantity</label>
-        <input type="number" id="invoiceQty" style="width:100%">
-      </div>
-      <button onclick="addInvoiceItem()">Add Item to Invoice</button>
-      <button onclick="saveVoucher()">Save Voucher</button>
+      <div class="form-group"><input type="text" id="selectedItemName" placeholder="Item Name" readonly /></div>
+      <div class="form-group"><input type="text" id="selectedItemBrand" placeholder="Brand" readonly /></div>
+      <div class="form-group"><input type="number" id="selectedItemPrice" placeholder="Unit Price" readonly /></div>
+      <div class="form-group"><input type="number" id="selectedItemQty" placeholder="Quantity" min="1" step="1" /></div>
+      <div class="form-group"><input type="text" id="selectedItemMeasure" placeholder="Measure" readonly /></div>
+      <button onclick="addItemToInvoice()">Add to Invoice</button>
+
+      <h4>Invoice Items</h4>
+      <table id="invoiceTable" aria-label="Invoice Items">
+        <thead>
+          <tr><th>No.</th><th>Item Code</th><th>Item Name</th><th>Brand</th><th>Unit Price</th><th>Quantity</th><th>Measure</th><th>Total Price</th><th>Action</th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+
+      <h4>Total: <span id="invoiceTotal">0</span> MMK</h4>
+      <button onclick="saveInvoice()">Save Invoice</button>
     </div>
 
     <!-- Verify -->
     <div id="verify" style="display:none">
-      <h3>Verify Voucher</h3>
+      <h3>Verify Vouchers</h3>
       <div id="verifyList"></div>
     </div>
 
@@ -189,318 +289,536 @@
       <h3>Confirmed Vouchers</h3>
       <div id="confirmedList"></div>
     </div>
+  </div>
 
-    <!-- Voucher View Modal -->
-    <div id="voucher-overlay" onclick="closeVoucherView()"></div>
-    <div class="voucher-view" id="voucher-view">
-      <div class="voucher-header">
-        YZ Electric
-        <small>123 Street, Yangon | 09-123456789</small>
-      </div>
-      <div class="voucher-section">
-        <p><strong>Customer Name:</strong> <span id="viewCustomerName">U Aung Aung</span></p>
-        <p><strong>Phone:</strong> <span id="viewCustomerPhone">09-987654321</span></p>
-        <p><strong>Address:</strong> <span id="viewCustomerAddress">Sanchaung, Yangon</span></p>
-        <p><strong>Voucher Code:</strong> <span id="viewVoucherCode">YA-00000001</span></p>
-      </div>
-      <table id="viewItemTable" style="width:100%;">
-        <tr><th>No.</th><th>Item Name</th><th>Unit Price</th><th>Qty</th><th>Total Price</th></tr>
-      </table>
-      <div class="voucher-section"><strong>All Total Price: <span id="allTotalPrice">1,000,000 MMK</span></strong></div>
-      <div class="voucher-section">1 Year Warranty Included.</div>
-      <div class="voucher-signatures">
-        <div><strong>Customer Sign</strong></div>
-        <div><strong>Authorized Sign</strong></div>
-      </div>
-      <div class="voucher-buttons">
-        <button onclick="window.print()">Print</button>
-        <button onclick="closeVoucherView()">Close</button>
-      </div>
+  <!-- Voucher View Modal -->
+  <div id="voucher-overlay"></div>
+  <div class="voucher-view" id="voucher-view">
+    <div class="voucher-header">YZ Electric Center<br/><small>Invoice Voucher</small></div>
+
+    <div class="voucher-section">
+      <strong>Customer:</strong> <span id="viewCustomerName"></span><br/>
+      <strong>Phone:</strong> <span id="viewCustomerPhone"></span><br/>
+      <strong>Address:</strong> <span id="viewCustomerAddress"></span><br/>
+      <strong>Voucher Code:</strong> <span id="viewVoucherCode"></span>
+    </div>
+
+    <table id="viewItemTable" style="width:100%; margin-top: 15px;">
+      <tr><th>No.</th><th>Item Name</th><th>Unit Price</th><th>Qty</th><th>Total Price</th></tr>
+    </table>
+
+    <div class="voucher-section" style="margin-top: 15px;">
+      <strong>Total Price: </strong> <span id="allTotalPrice"></span>
+    </div>
+
+    <div class="voucher-section" style="margin-top: 15px; font-size: 13px; color: #555;">
+      <p>Guarantee: All goods come with a one-year warranty from the date of purchase. Handle carefully.</p>
+    </div>
+
+    <div class="voucher-signatures">
+      <div>Seller Signature</div>
+      <div>Customer Signature</div>
+    </div>
+
+    <div class="voucher-buttons">
+      <button onclick="printVoucher()">Print</button>
+      <button onclick="closeVoucherView()">Close</button>
     </div>
   </div>
 
   <script>
-    // Data arrays
-    const itemList = [];
-    const invoiceItems = [];
-    const verifyVouchers = [];
-    const confirmedVouchers = [];
+    // Global Data Arrays
+    let itemList = [];
+    let invoiceItems = [];
+    let verifyVouchers = [];
+    let confirmedVouchers = [];
 
-    // Show/hide views
-    function showDefaultView() {
-      hideAllViews();
-      document.getElementById('default-view').style.display = 'block';
-      closeVoucherView();
+    // Sidebar toggle for subtabs
+    function toggleSubTabs(parent) {
+      const sub = document.getElementById(parent + '-sub');
+      if (!sub) return;
+      if (sub.style.display === 'flex') {
+        sub.style.display = 'none';
+      } else {
+        sub.style.display = 'flex';
+      }
     }
 
-    function toggleSubTabs(tabType) {
-      const subTab = document.getElementById(`${tabType}-sub`);
-      const isVisible = subTab.style.display === 'flex';
-      subTab.style.display = isVisible ? 'none' : 'flex';
-    }
-
+    // Show views
     function showView(viewId) {
-      hideAllViews();
-      document.getElementById(viewId).style.display = 'block';
-      if(viewId === 'verify') updateVerifyList();
-      if(viewId === 'confirmed') updateConfirmedList();
-      closeVoucherView();
+      // Hide all main subviews except default
+      const views = ['default-view','add-item','item-list','invoice','verify','confirmed'];
+      views.forEach(v => {
+        document.getElementById(v).style.display = (v === viewId) ? 'block' : 'none';
+      });
+      updateActiveTabs(viewId);
     }
 
-    function hideAllViews() {
-      const views = ['default-view', 'add-item', 'item-list', 'invoice', 'verify', 'confirmed'];
-      views.forEach(id => document.getElementById(id).style.display = 'none');
+    function showDefaultView() {
+      showView('default-view');
     }
 
-    // Add Item
+    // Update sidebar active tab highlight
+    function updateActiveTabs(viewId) {
+      // Remove all active classes first
+      document.querySelectorAll('.sidebar .tab').forEach(tab => tab.classList.remove('active'));
+      // Map viewId to sidebar tab to highlight
+      if (viewId === 'add-item' || viewId === 'item-list') {
+        document.getElementById('tab-item').classList.add('active');
+        if (viewId === 'add-item') {
+          document.getElementById('tab-add-item').classList.add('active');
+          document.getElementById('item-sub').style.display = 'flex';
+        } else {
+          document.getElementById('tab-item-list').classList.add('active');
+          document.getElementById('item-sub').style.display = 'flex';
+        }
+      } else if (viewId === 'invoice' || viewId === 'verify' || viewId === 'confirmed') {
+        document.getElementById('tab-order').classList.add('active');
+        if (viewId === 'invoice') {
+          document.getElementById('tab-invoice').classList.add('active');
+          document.getElementById('order-sub').style.display = 'flex';
+        } else if (viewId === 'verify') {
+          document.getElementById('tab-verify').classList.add('active');
+          document.getElementById('order-sub').style.display = 'flex';
+        } else {
+          document.getElementById('tab-confirmed').classList.add('active');
+          document.getElementById('order-sub').style.display = 'flex';
+        }
+      } else {
+        // Hide all subtabs
+        document.getElementById('item-sub').style.display = 'none';
+        document.getElementById('order-sub').style.display = 'none';
+      }
+    }
+
+    // Add item to stock list
     function addItem() {
-      const item = {
-        code: document.getElementById('itemCode').value.trim(),
-        name: document.getElementById('itemName').value.trim(),
-        brand: document.getElementById('itemBrand').value.trim(),
-        price: parseFloat(document.getElementById('itemPrice').value),
-        qty: parseInt(document.getElementById('itemQty').value),
-        measure: document.getElementById('itemMeasure').value,
-      };
-      if(!item.code || !item.name || !item.brand || isNaN(item.price) || isNaN(item.qty)) {
-        alert('Please fill all item fields correctly.');
+      const code = document.getElementById('itemCode').value.trim();
+      const name = document.getElementById('itemName').value.trim();
+      const brand = document.getElementById('itemBrand').value.trim();
+      const price = parseFloat(document.getElementById('itemPrice').value);
+      const qty = parseInt(document.getElementById('itemQty').value);
+      const measure = document.getElementById('itemMeasure').value;
+
+      if (!code || !name || !brand || isNaN(price) || price < 0 || isNaN(qty) || qty < 0) {
+        alert('Please fill all fields correctly.');
         return;
       }
-      itemList.push(item);
+      // Check duplicate code
+      if (itemList.find(i => i.code === code)) {
+        alert('Item code already exists.');
+        return;
+      }
+      itemList.push({ code, name, brand, price, qty, measure });
+      alert('Item added successfully.');
+      clearAddItemForm();
       updateItemList();
-      updateItemDropdown();
-      // Clear inputs
+      updateSelectItemCodes();
+    }
+
+    // Clear add item form
+    function clearAddItemForm() {
       document.getElementById('itemCode').value = '';
       document.getElementById('itemName').value = '';
       document.getElementById('itemBrand').value = '';
       document.getElementById('itemPrice').value = '';
       document.getElementById('itemQty').value = '';
-      document.getElementById('itemMeasure').value = 'Unit';
+      document.getElementById('itemMeasure').selectedIndex = 0;
     }
 
-    // Update Item List table
+    // Update item list table
     function updateItemList() {
-      const table = document.getElementById('itemTable');
-      table.innerHTML = '<tr><th>No.</th><th>Item Code</th><th>Item Name</th><th>Brand</th><th>Unit Price</th><th>Quantity</th><th>Measure</th><th>Action</th></tr>';
-      itemList.forEach((item, index) => {
-        const row = `<tr>
-          <td>${index+1}</td>
+      const tbody = document.querySelector('#itemTable tbody');
+      tbody.innerHTML = '';
+      if (itemList.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center">No items found.</td></tr>';
+        return;
+      }
+      itemList.forEach((item, idx) => {
+        tbody.innerHTML += `<tr>
+          <td>${idx + 1}</td>
           <td>${item.code}</td>
           <td>${item.name}</td>
           <td>${item.brand}</td>
-          <td>${item.price}</td>
+          <td>${item.price.toLocaleString()}</td>
           <td>${item.qty}</td>
           <td>${item.measure}</td>
-          <td><button onclick="editItem(${index})">Edit</button></td>
+          <td><button onclick="editItem(${idx})">Edit</button></td>
         </tr>`;
-        table.innerHTML += row;
       });
     }
 
-    // Edit Item (optional implementation)
+    // Edit item (simple alert placeholder, can add modal or inline editing)
     function editItem(index) {
       const item = itemList[index];
-      alert(`Edit Item feature not implemented yet.\nItem: ${item.name}`);
+      const newName = prompt("Edit Item Name:", item.name);
+      if (newName === null) return;
+      const newBrand = prompt("Edit Brand:", item.brand);
+      if (newBrand === null) return;
+      const newPrice = prompt("Edit Unit Price:", item.price);
+      if (newPrice === null || isNaN(parseFloat(newPrice))) return;
+      const newQty = prompt("Edit Quantity:", item.qty);
+      if (newQty === null || isNaN(parseInt(newQty))) return;
+      const newMeasure = prompt("Edit Measure:", item.measure);
+      if (newMeasure === null) return;
+
+      item.name = newName.trim();
+      item.brand = newBrand.trim();
+      item.price = parseFloat(newPrice);
+      item.qty = parseInt(newQty);
+      item.measure = newMeasure.trim();
+      updateItemList();
+      updateSelectItemCodes();
+      alert('Item updated.');
     }
 
-    // Update invoice item dropdown
-    function updateItemDropdown() {
-      const select = document.getElementById('invoiceItemSelect');
-      select.innerHTML = '';
+    // Update select item codes dropdown in invoice
+    function updateSelectItemCodes() {
+      const select = document.getElementById('selectItemCode');
+      select.innerHTML = '<option value="">Select Item Code</option>';
       itemList.forEach(item => {
-        const option = document.createElement('option');
-        option.value = item.code;
-        option.text = `${item.name} (${item.brand}) - ${item.price} MMK`;
-        select.appendChild(option);
+        select.innerHTML += `<option value="${item.code}">${item.code}</option>`;
       });
     }
 
-    // Add item to invoiceItems
-    function addInvoiceItem() {
-      const selectedCode = document.getElementById('invoiceItemSelect').value;
-      const qty = parseInt(document.getElementById('invoiceQty').value);
-      if (!selectedCode) {
-        alert('Select an item.');
+    // When item code selected, fill info
+    function populateSelectedItem() {
+      const code = document.getElementById('selectItemCode').value;
+      if (!code) {
+        clearSelectedItemFields();
         return;
       }
-      if (isNaN(qty) || qty <= 0) {
-        alert('Enter valid quantity.');
-        return;
-      }
-      const item = itemList.find(i => i.code === selectedCode);
+      const item = itemList.find(i => i.code === code);
       if (!item) {
-        alert('Item not found.');
+        clearSelectedItemFields();
         return;
       }
-      if (qty > item.qty) {
-        alert('Quantity exceeds available stock.');
-        return;
-      }
-      // Add to invoiceItems
-      invoiceItems.push({
-        code: item.code,
-        name: item.name,
-        price: item.price,
-        qty: qty,
-        total: item.price * qty,
-      });
-      updateInvoiceItemsDisplay();
-      // Reset quantity
-      document.getElementById('invoiceQty').value = '';
+      document.getElementById('selectedItemName').value = item.name;
+      document.getElementById('selectedItemBrand').value = item.brand;
+      document.getElementById('selectedItemPrice').value = item.price;
+      document.getElementById('selectedItemQty').value = 1;
+      document.getElementById('selectedItemMeasure').value = item.measure;
     }
 
-    // Display invoiceItems on Invoice tab
-    function updateInvoiceItemsDisplay() {
-      const div = document.getElementById('invoiceItems');
-      if (invoiceItems.length === 0) {
-        div.innerHTML = '<p>No items added.</p>';
+    function clearSelectedItemFields() {
+      document.getElementById('selectedItemName').value = '';
+      document.getElementById('selectedItemBrand').value = '';
+      document.getElementById('selectedItemPrice').value = '';
+      document.getElementById('selectedItemQty').value = '';
+      document.getElementById('selectedItemMeasure').value = '';
+    }
+
+    // Add selected item to invoice list
+    function addItemToInvoice() {
+      const code = document.getElementById('selectItemCode').value;
+      if (!code) {
+        alert('Please select an item code.');
         return;
       }
-      let html = '<table><tr><th>No.</th><th>Name</th><th>Unit Price</th><th>Qty</th><th>Total</th></tr>';
+      const qty = parseInt(document.getElementById('selectedItemQty').value);
+      if (isNaN(qty) || qty <= 0) {
+        alert('Please enter a valid quantity.');
+        return;
+      }
+      const stockItem = itemList.find(i => i.code === code);
+      if (!stockItem) {
+        alert('Selected item not found.');
+        return;
+      }
+      if (qty > stockItem.qty) {
+        alert(`Not enough stock. Available quantity: ${stockItem.qty}`);
+        return;
+      }
+      // Check if item already in invoice, then update qty
+      const existingItem = invoiceItems.find(i => i.code === code);
+      if (existingItem) {
+        if (existingItem.qty + qty > stockItem.qty) {
+          alert(`Not enough stock to add this quantity. Available: ${stockItem.qty - existingItem.qty}`);
+          return;
+        }
+        existingItem.qty += qty;
+        existingItem.total = existingItem.price * existingItem.qty;
+      } else {
+        invoiceItems.push({
+          code: stockItem.code,
+          name: stockItem.name,
+          brand: stockItem.brand,
+          price: stockItem.price,
+          qty: qty,
+          measure: stockItem.measure,
+          total: stockItem.price * qty,
+        });
+      }
+      alert('Item added to invoice.');
+      updateInvoiceTable();
+      clearInvoiceItemInputs();
+    }
+
+    // Update invoice items table
+    function updateInvoiceTable() {
+      const tbody = document.querySelector('#invoiceTable tbody');
+      tbody.innerHTML = '';
+      if (invoiceItems.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;">No items added.</td></tr>';
+        document.getElementById('invoiceTotal').textContent = '0';
+        return;
+      }
+      let total = 0;
       invoiceItems.forEach((item, idx) => {
-        html += `<tr>
-          <td>${idx+1}</td>
+        total += item.total;
+        tbody.innerHTML += `<tr>
+          <td>${idx + 1}</td>
+          <td>${item.code}</td>
           <td>${item.name}</td>
-          <td>${item.price}</td>
+          <td>${item.brand}</td>
+          <td>${item.price.toLocaleString()}</td>
           <td>${item.qty}</td>
-          <td>${item.total}</td>
+          <td>${item.measure}</td>
+          <td>${item.total.toLocaleString()}</td>
+          <td><button onclick="removeInvoiceItem(${idx})">Remove</button></td>
         </tr>`;
       });
-      html += '</table>';
-      div.innerHTML = html;
+      document.getElementById('invoiceTotal').textContent = total.toLocaleString();
     }
 
-    // Save voucher to verify tab
-    function saveVoucher() {
+    // Remove item from invoice list
+    function removeInvoiceItem(index) {
+      invoiceItems.splice(index, 1);
+      updateInvoiceTable();
+    }
+
+    // Clear selected invoice item inputs
+    function clearInvoiceItemInputs() {
+      document.getElementById('selectItemCode').selectedIndex = 0;
+      clearSelectedItemFields();
+    }
+
+    // Auto-generate voucher code with prefix YA- and 8 digits (incremental)
+    function generateVoucherCode() {
+      const prefix = 'YA-';
+      let maxNumber = 0;
+      [...verifyVouchers, ...confirmedVouchers].forEach(v => {
+        if (v.voucherCode && v.voucherCode.startsWith(prefix)) {
+          const numPart = parseInt(v.voucherCode.slice(prefix.length));
+          if (!isNaN(numPart) && numPart > maxNumber) maxNumber = numPart;
+        }
+      });
+      const newNumber = maxNumber + 1;
+      const newCode = prefix + newNumber.toString().padStart(8, '0');
+      document.getElementById('voucherCode').value = newCode;
+    }
+
+    // Save invoice (add to verify list)
+    function saveInvoice() {
       const customerName = document.getElementById('customerName').value.trim();
       const customerPhone = document.getElementById('customerPhone').value.trim();
       const customerAddress = document.getElementById('customerAddress').value.trim();
-      let voucherCode = document.getElementById('voucherCode').value.trim();
+      const voucherCode = document.getElementById('voucherCode').value.trim();
 
       if (!customerName || !customerPhone || !customerAddress || !voucherCode) {
-        alert('Please fill customer info and voucher code.');
+        alert('Please fill all customer info and generate voucher code.');
         return;
       }
       if (invoiceItems.length === 0) {
-        alert('Add items to the invoice.');
+        alert('Invoice must have at least one item.');
         return;
       }
-      // Prevent duplicate voucher code
-      if (verifyVouchers.some(v => v.voucherCode === voucherCode) || confirmedVouchers.some(v => v.voucherCode === voucherCode)) {
-        alert('Voucher code already used.');
+      // Check voucherCode unique
+      if (verifyVouchers.find(v => v.voucherCode === voucherCode) || confirmedVouchers.find(v => v.voucherCode === voucherCode)) {
+        alert('Voucher code already exists. Generate a new one.');
         return;
       }
-
-      const voucher = {
+      // Deep copy invoiceItems
+      const invoiceCopy = JSON.parse(JSON.stringify(invoiceItems));
+      verifyVouchers.push({
         customerName,
         customerPhone,
         customerAddress,
         voucherCode,
-        items: [...invoiceItems],
-      };
+        items: invoiceCopy,
+        totalPrice: invoiceCopy.reduce((acc, i) => acc + i.total, 0)
+      });
+      // Deduct stock
+      invoiceCopy.forEach(invItem => {
+        const stockItem = itemList.find(i => i.code === invItem.code);
+        if (stockItem) {
+          stockItem.qty -= invItem.qty;
+        }
+      });
+      alert('Invoice saved to Verify tab.');
+      clearInvoiceForm();
+      updateItemList();
+      updateVerifyList();
+      updateSelectItemCodes();
+      showView('verify');
+    }
 
-      verifyVouchers.push(voucher);
-
-      alert('Voucher saved to Verify tab.');
-      // Reset form and invoice items
+    // Clear invoice form inputs and invoice items array
+    function clearInvoiceForm() {
       document.getElementById('customerName').value = '';
       document.getElementById('customerPhone').value = '';
       document.getElementById('customerAddress').value = '';
       document.getElementById('voucherCode').value = '';
-      invoiceItems.length = 0;
-      updateInvoiceItemsDisplay();
-
-      showView('verify');
+      invoiceItems = [];
+      updateInvoiceTable();
     }
 
-    // Update Verify tab voucher list
+    // Update verify vouchers list display
     function updateVerifyList() {
       const container = document.getElementById('verifyList');
+      container.innerHTML = '';
       if (verifyVouchers.length === 0) {
         container.innerHTML = '<p>No vouchers to verify.</p>';
         return;
       }
-      let html = '<table><tr><th>Voucher Code</th><th>Customer</th><th>Actions</th></tr>';
-      verifyVouchers.forEach((v, i) => {
-        html += `<tr>
-          <td>${v.voucherCode}</td>
-          <td>${v.customerName}</td>
-          <td>
-            <button onclick="editVerifyVoucher(${i})">Edit</button>
-            <button onclick="confirmVoucher(${i})">Confirm</button>
-          </td>
-        </tr>`;
+      verifyVouchers.forEach((v, idx) => {
+        const div = document.createElement('div');
+        div.style.border = '1px solid #ccc';
+        div.style.margin = '5px 0';
+        div.style.padding = '5px';
+        div.innerHTML = `
+          <strong>${v.voucherCode}</strong><br/>
+          Customer: ${v.customerName}<br/>
+          Total: ${v.totalPrice.toLocaleString()} MMK<br/>
+          <button onclick="confirmVoucher(${idx})">Confirm</button>
+          <button onclick="editVoucher(${idx})">Edit</button>
+          <button onclick="cancelVoucher(${idx})">Cancel</button>
+          <button onclick="viewVoucher(${idx}, 'verify')">View</button>
+        `;
+        container.appendChild(div);
       });
-      html += '</table>';
-      container.innerHTML = html;
     }
 
-    // Edit Verify voucher (basic alert for demo)
-    function editVerifyVoucher(index) {
-      alert('Editing voucher not implemented yet.');
-    }
-
-    // Confirm voucher: move from verifyVouchers to confirmedVouchers
+    // Confirm voucher from verify list to confirmed list
     function confirmVoucher(index) {
-      const voucher = verifyVouchers.splice(index, 1)[0];
+      const voucher = verifyVouchers[index];
       confirmedVouchers.push(voucher);
+      verifyVouchers.splice(index, 1);
+      alert('Voucher confirmed.');
       updateVerifyList();
       updateConfirmedList();
-      alert('Voucher confirmed!');
       showView('confirmed');
     }
 
-    // Update Confirmed tab voucher list with Preview buttons
+    // Edit voucher in verify list (only customer info and items editable)
+    function editVoucher(index) {
+      const voucher = verifyVouchers[index];
+      if (!voucher) return alert('Voucher not found.');
+
+      // Populate form with voucher info
+      document.getElementById('customerName').value = voucher.customerName;
+      document.getElementById('customerPhone').value = voucher.customerPhone;
+      document.getElementById('customerAddress').value = voucher.customerAddress;
+      document.getElementById('voucherCode').value = voucher.voucherCode;
+
+      invoiceItems = JSON.parse(JSON.stringify(voucher.items));
+
+      updateInvoiceTable();
+
+      // Remove from verify list temporarily to avoid duplicates
+      verifyVouchers.splice(index, 1);
+
+      showView('invoice');
+    }
+
+    // Cancel voucher (remove and restock)
+    function cancelVoucher(index) {
+      const voucher = verifyVouchers[index];
+      if (!voucher) return alert('Voucher not found.');
+
+      // Restock items
+      voucher.items.forEach(item => {
+        const stockItem = itemList.find(i => i.code === item.code);
+        if (stockItem) {
+          stockItem.qty += item.qty;
+        }
+      });
+      verifyVouchers.splice(index, 1);
+      alert('Voucher canceled and stock restored.');
+      updateVerifyList();
+      updateItemList();
+      updateSelectItemCodes();
+    }
+
+    // Update confirmed vouchers list display
     function updateConfirmedList() {
       const container = document.getElementById('confirmedList');
+      container.innerHTML = '';
       if (confirmedVouchers.length === 0) {
         container.innerHTML = '<p>No confirmed vouchers.</p>';
         return;
       }
-      let html = '<table><tr><th>Voucher Code</th><th>Customer</th><th>Actions</th></tr>';
-      confirmedVouchers.forEach((v, i) => {
-        html += `<tr>
-          <td>${v.voucherCode}</td>
-          <td>${v.customerName}</td>
-          <td><button onclick="showConfirmedVoucher(${i})">Preview</button></td>
-        </tr>`;
+      confirmedVouchers.forEach((v, idx) => {
+        const div = document.createElement('div');
+        div.style.border = '1px solid #ccc';
+        div.style.margin = '5px 0';
+        div.style.padding = '5px';
+        div.innerHTML = `
+          <strong>${v.voucherCode}</strong><br/>
+          Customer: ${v.customerName}<br/>
+          Total: ${v.totalPrice.toLocaleString()} MMK<br/>
+          <button onclick="viewVoucher(${idx}, 'confirmed')">View</button>
+        `;
+        container.appendChild(div);
       });
-      html += '</table>';
-      container.innerHTML = html;
     }
 
-    // Show voucher preview modal with confirmed voucher data
-    function showConfirmedVoucher(index) {
-      const voucher = confirmedVouchers[index];
-      document.getElementById('viewCustomerName').innerText = voucher.customerName;
-      document.getElementById('viewCustomerPhone').innerText = voucher.customerPhone;
-      document.getElementById('viewCustomerAddress').innerText = voucher.customerAddress;
-      document.getElementById('viewVoucherCode').innerText = voucher.voucherCode;
+    // View voucher details in modal
+    function viewVoucher(index, listType) {
+      let voucher = null;
+      if (listType === 'verify') voucher = verifyVouchers[index];
+      else if (listType === 'confirmed') voucher = confirmedVouchers[index];
+      if (!voucher) return alert('Voucher not found.');
 
+      document.getElementById('viewCustomerName').textContent = voucher.customerName;
+      document.getElementById('viewCustomerPhone').textContent = voucher.customerPhone;
+      document.getElementById('viewCustomerAddress').textContent = voucher.customerAddress;
+      document.getElementById('viewVoucherCode').textContent = voucher.voucherCode;
+
+      // Clear previous rows except header
       const table = document.getElementById('viewItemTable');
-      table.innerHTML = '<tr><th>No.</th><th>Item Name</th><th>Unit Price</th><th>Qty</th><th>Total Price</th></tr>';
+      // Remove all rows except first (header)
+      while (table.rows.length > 1) table.deleteRow(1);
 
-      let totalPrice = 0;
       voucher.items.forEach((item, idx) => {
-        const row = document.createElement('tr');
-        row.innerHTML = `<td>${idx+1}</td><td>${item.name}</td><td>${item.price}</td><td>${item.qty}</td><td>${item.total}</td>`;
-        table.appendChild(row);
-        totalPrice += item.total;
+        const row = table.insertRow();
+        row.insertCell(0).textContent = idx + 1;
+        row.insertCell(1).textContent = item.name;
+        row.insertCell(2).textContent = item.price.toLocaleString();
+        row.insertCell(3).textContent = item.qty;
+        row.insertCell(4).textContent = item.total.toLocaleString();
       });
-      document.getElementById('allTotalPrice').innerText = totalPrice.toLocaleString() + ' MMK';
 
-      document.getElementById('voucher-view').style.display = 'block';
+      document.getElementById('allTotalPrice').textContent = voucher.totalPrice.toLocaleString() + ' MMK';
+
       document.getElementById('voucher-overlay').style.display = 'block';
+      document.getElementById('voucher-view').style.display = 'block';
     }
 
-    // Close voucher preview modal
+    // Close voucher modal
     function closeVoucherView() {
-      document.getElementById('voucher-view').style.display = 'none';
       document.getElementById('voucher-overlay').style.display = 'none';
+      document.getElementById('voucher-view').style.display = 'none';
     }
 
-    // Initialize with default view
-    showDefaultView();
+    // Print voucher content
+    function printVoucher() {
+      const printContents = document.getElementById('voucher-view').innerHTML;
+      const originalContents = document.body.innerHTML;
+      document.body.innerHTML = printContents;
+      window.print();
+      document.body.innerHTML = originalContents;
+      location.reload();
+    }
+
+    // Initialize default view and updates
+    window.onload = function() {
+      updateItemList();
+      updateSelectItemCodes();
+      updateVerifyList();
+      updateConfirmedList();
+      showDefaultView();
+    }
   </script>
 </body>
 </html>
